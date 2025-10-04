@@ -1,0 +1,19 @@
+{
+  "name": "money-sink-visualizer",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun ./src/index.html",
+    "build": "bun ./build.ts"
+  },
+  "dependencies": {
+    "ag-charts-community": "^12.2.0"
+  }
+}
