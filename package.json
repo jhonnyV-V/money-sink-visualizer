@@ -14,6 +14,7 @@
     "build": "bun ./build.ts"
   },
   "dependencies": {
-    "ag-charts-community": "^12.2.0"
+    "ag-charts-community": "^12.2.0",
+    "dayjs": "^1.11.18"
   }
 }

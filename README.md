@@ -23,3 +23,4 @@ This project was created using `bun init` in bun v1.2.23. [Bun](https://bun.com)
 ## TODOS
 - filter by date range
 - check where does the unkown data comes from
+- check where all the invalid dates come from
