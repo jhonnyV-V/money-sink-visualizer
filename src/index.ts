@@ -2,13 +2,9 @@ import { AgCharts, type AgChartOptions } from "ag-charts-community";
 //https://www.ag-grid.com/charts/javascript/create-a-basic-chart/
 //https://www.ag-grid.com/charts/javascript/ts-generics/
 //https://www.ag-grid.com/charts/javascript/donut-series/
-//https://www.ag-grid.com/charts/javascript/combination-series/
 
-type myDataType = {
-  month: string;
-  avgTemp: number;
-  iceCreamSales: number;
-};
+//income again expenses
+//https://www.ag-grid.com/charts/javascript/combination-series/
 
 export type rawData = {
   amount: number;
@@ -25,6 +21,13 @@ type basicDataChart = {
   // comment?: string;
   // tags?: string[];
 };
+
+type combinationDataChart = {
+  date: string,
+  expenses: number,
+  income: number,
+  rest: number
+}
 
 let fileData: rawData[] | undefined = undefined
 
@@ -48,55 +51,78 @@ function startFileListening() {
 }
 
 function renderCharts(rawFileData: rawData[]) {
-  const options: AgChartOptions<myDataType> = {
-  // Container: HTML Element to hold the chart
-  container: document.getElementById("exampleChart")!,
-  // Data: Data to be displayed in the chart
-  data: [
-    { month: "Jan", avgTemp: 2.3, iceCreamSales: 162000 },
-    { month: "Mar", avgTemp: 6.3, iceCreamSales: 302000 },
-    { month: "May", avgTemp: 16.2, iceCreamSales: 800000 },
-    { month: "Jul", avgTemp: 22.8, iceCreamSales: 1254000 },
-    { month: "Sep", avgTemp: 14.5, iceCreamSales: 950000 },
-    { month: "Nov", avgTemp: 8.9, iceCreamSales: 200000 },
-  ],
-  // Series: Defines which chart type and data to use
-  series: [{ type: "bar", xKey: "month", yKey: "iceCreamSales" }],
-};
-
-AgCharts.create(options);
-
-const basicData: basicDataChart[] = [];
-
-for (let i = 0; i < rawFileData.length; i++) {
-  const rawDataPoint = rawFileData[i]!;
-
-  let category = "";
-  if (!rawDataPoint.category?.length) {
-    category = "unknown";
-    console.log("unknown data point", rawDataPoint)
-  } else {
-    category = rawDataPoint.category[0]!;
+  const basicData: basicDataChart[] = [];
+  const combinationData: combinationDataChart = {
+    date: new Date().toDateString(),
+    expenses: 0,
+    income: 0,
+    rest: 0
   }
 
-  const dataPoint: basicDataChart = {
-    amount: Math.abs(rawDataPoint.amount),
-    date: rawDataPoint.date,
-    category: category,
+  for (let i = 0; i < rawFileData.length; i++) {
+    const rawDataPoint = rawFileData[i]!;
+    const amount = Math.abs(rawDataPoint.amount)
+
+    let category = "";
+    if (!rawDataPoint.category?.length) {
+      category = "unknown";
+      combinationData.expenses += amount
+      console.log("unknown data point", rawDataPoint)
+    } else {
+      if(rawDataPoint.category[0]?.includes("work")) {
+        combinationData.income += amount
+      } else {
+        combinationData.expenses += amount
+      }
+      category = rawDataPoint.category[0]!;
+    }
+
+    const dataPoint: basicDataChart = {
+      amount: amount,
+      date: rawDataPoint.date,
+      category: category,
+    };
+    basicData.push(dataPoint);
+  }
+
+  const basicChartOptions: AgChartOptions<basicDataChart> = {
+    container: document.getElementById("basicChart")!,
+    title: {
+      text: "All data"
+    },
+    data: basicData,
+    series: [{ type: "bar", xKey: "category", yKey: "amount" }],
   };
-  basicData.push(dataPoint);
-}
 
-const options2: AgChartOptions<basicDataChart> = {
-  // Container: HTML Element to hold the chart
-  container: document.getElementById("basicChart")!,
-  // Data: Data to be displayed in the chart
-  data: basicData,
-  // Series: Defines which chart type and data to use
-  series: [{ type: "bar", xKey: "category", yKey: "amount" }],
-};
+  AgCharts.create(basicChartOptions);
 
-AgCharts.create(options2);
+  const onlyExpensesOptions: AgChartOptions<basicDataChart> = {
+    container: document.getElementById("onlyExpenses")!,
+    title: {
+      text: "Only Expenses"
+    },
+    data: basicData.filter((dataPoint) => !dataPoint.category.includes("work")),
+    series: [{ type: "bar", xKey: "category", yKey: "amount" }],
+  };
+
+  AgCharts.create(onlyExpensesOptions);
+
+  combinationData.rest = combinationData.income - combinationData.expenses
+
+  const combinationChartOptions: AgChartOptions<combinationDataChart> = {
+    container: document.getElementById("combinationChart")!,
+    title: {
+      text: "Income vs Expenses"
+    },
+    data: [combinationData],
+    series: [
+      {type: "bar", xKey: "date", yKey: "income", yName: "Income", grouped: true},
+      {type: "bar", xKey: "date", yKey: "expenses", yName: "Expenses", grouped: true},
+      {type: "bar", xKey: "date", yKey: "rest", yName: "Rest", grouped: true},
+    ]
+  }
+
+  AgCharts.create(combinationChartOptions)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
