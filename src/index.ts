@@ -1,5 +1,4 @@
 import { AgCharts, type AgChartOptions } from "ag-charts-community";
-import dataExample from "./data.ts";
 //https://www.ag-grid.com/charts/javascript/create-a-basic-chart/
 //https://www.ag-grid.com/charts/javascript/ts-generics/
 //https://www.ag-grid.com/charts/javascript/donut-series/
@@ -11,7 +10,45 @@ type myDataType = {
   iceCreamSales: number;
 };
 
-const options: AgChartOptions<myDataType> = {
+export type rawData = {
+  amount: number;
+  category?: string[];
+  date: string;
+  comment?: string;
+  tags?: string[];
+};
+
+type basicDataChart = {
+  amount: number;
+  category: string;
+  date: string;
+  // comment?: string;
+  // tags?: string[];
+};
+
+let fileData: rawData[] | undefined = undefined
+
+function startFileListening() {
+  const fileInput: HTMLInputElement = document.getElementById("inputFile") as HTMLInputElement
+
+  if (!fileInput) {
+    console.log("no file input")
+    return
+  }
+
+  fileInput.addEventListener("change", async () => {
+    if (fileInput?.files?.length != 1) {
+      return
+    }
+
+    const file = await fileInput?.files[0]?.text()
+    fileData = JSON.parse(file!)
+    renderCharts(fileData!)
+  })
+}
+
+function renderCharts(rawFileData: rawData[]) {
+  const options: AgChartOptions<myDataType> = {
   // Container: HTML Element to hold the chart
   container: document.getElementById("exampleChart")!,
   // Data: Data to be displayed in the chart
@@ -29,22 +66,15 @@ const options: AgChartOptions<myDataType> = {
 
 AgCharts.create(options);
 
-type basicDataChart = {
-  amount: number;
-  category: string;
-  date: string;
-  // comment?: string;
-  // tags?: string[];
-};
-
 const basicData: basicDataChart[] = [];
 
-for (let i = 0; i < dataExample.length; i++) {
-  const rawDataPoint = dataExample[i]!;
+for (let i = 0; i < rawFileData.length; i++) {
+  const rawDataPoint = rawFileData[i]!;
 
   let category = "";
   if (!rawDataPoint.category?.length) {
     category = "unknown";
+    console.log("unknown data point", rawDataPoint)
   } else {
     category = rawDataPoint.category[0]!;
   }
@@ -67,3 +97,9 @@ const options2: AgChartOptions<basicDataChart> = {
 };
 
 AgCharts.create(options2);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  startFileListening()
+})
+
