@@ -9,8 +9,21 @@
   </head>
   <body>
     <div class="chartContainer">
-      <label for="inputFile">upload your data</label>
-      <input type="file" id="inputFile" accept=".json">
+      <label for="startDate">
+        Start Date
+      </label>
+      <input type="date" id="startDate">
+      <label for="endDate">
+        End Date
+      </label>
+      <input type="date" id="endDate">
+
+      <label for="inputFile">
+        upload your data
+        <input type="file" id="inputFile" accept=".json">
+      </label>
+      <button id="clearButton">clear</button>
+
       <div id="basicChart"></div>
       <div id="combinationChart"></div>
       <div id="detailedCombinationChart"></div>

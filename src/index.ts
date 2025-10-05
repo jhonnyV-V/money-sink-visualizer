@@ -33,6 +33,8 @@ type combinationDataChart = {
 };
 
 let fileData: rawData[] | undefined = undefined;
+let startDate: dayjs.Dayjs | undefined = undefined;
+let endDate: dayjs.Dayjs | undefined = undefined;
 const dateToCombinationChart = new Map<string, combinationDataChart>();
 const dateToBasicCombinationChart = new Map<
   string,
@@ -49,18 +51,104 @@ let detailedCombinationChart:
   | AgChartInstance<AgCartesianChartOptions<basicCombinationDataChart, unknown>>
   | undefined;
 
-function getDate(rawDate: string) {
-  const date = dayjs(rawDate);
+function getDate(rawDate: string): string {
+  const date = dayjs(rawDate, "m/d/yyyy");
   if (!date.isValid()) {
     console.log("invalid raw date", rawDate);
     return "";
   }
 
-  if (date.get("day") >= 21) {
-    return `${date.get("month") + 1}-${date.get("year")}`;
+  if (date.toDate().getDate() >= 21) {
+    return date.add(1, "month").format("MM-YYYY");
   }
 
-  return `${date.get("month")}-${date.get("year")}`;
+  return date.format("MM-YYYY");
+}
+
+function isDateInRange(rawDate: string): boolean {
+  const date = dayjs(rawDate, "m/d/yyyy");
+  if (!date.isValid()) {
+    return true;
+  }
+
+  if (date.isBefore(startDate, "day")) {
+    return false;
+  }
+
+  if (endDate && date.isAfter(endDate, "day")) {
+    return false;
+  }
+
+  return true;
+}
+
+function clearHandler() {
+  const button = document.getElementById("clearButton")!;
+  if (!button) {
+    console.log("no clear button");
+    return;
+  }
+
+  button.addEventListener("click", () => {
+    const fileInput: HTMLInputElement = document.getElementById(
+      "inputFile",
+    ) as HTMLInputElement;
+    fileInput.value = "";
+
+    const startDateInput = document.getElementById(
+      "startDate",
+    ) as HTMLInputElement;
+    if (startDateInput) {
+      startDateInput.value = "";
+      startDate = undefined;
+    }
+
+    const endDateInput = document.getElementById("endDate") as HTMLInputElement;
+    if (endDateInput) {
+      endDateInput.value = "";
+      endDate = undefined;
+    }
+
+    if (detailedCombinationChart) {
+      detailedCombinationChart.destroy();
+    }
+
+    if (basicChart) {
+      basicChart.destroy();
+    }
+
+    if (combinationChart) {
+      combinationChart.destroy();
+    }
+  });
+}
+
+function inputDateHandler() {
+  const startDateInput = document.getElementById(
+    "startDate",
+  ) as HTMLInputElement;
+  if (!startDateInput) {
+    console.log("no startDate input");
+    return;
+  }
+
+  const endDateInput = document.getElementById("endDate") as HTMLInputElement;
+  if (!endDateInput) {
+    console.log("no endDate input");
+    return;
+  }
+
+  startDateInput.addEventListener("change", () => {
+    if (startDateInput.value) {
+      startDate = dayjs(startDateInput.value, "YYYY-MM-DD");
+    }
+  });
+
+  endDateInput.addEventListener("change", () => {
+    if (endDateInput.value) {
+      endDate = dayjs(endDateInput.value, "YYYY-MM-DD");
+    }
+  });
 }
 
 function startFileListening() {
@@ -89,6 +177,14 @@ function renderCharts(rawFileData: rawData[]) {
   for (let i = 0; i < rawFileData.length; i++) {
     const rawDataPoint = rawFileData[i]!;
     const amount = Math.abs(rawDataPoint.amount);
+    const date = getDate(rawDataPoint.date);
+
+    if (startDate) {
+      const isValid = isDateInRange(rawDataPoint.date);
+      if (!isValid) {
+        continue;
+      }
+    }
 
     let category = "";
     if (!rawDataPoint.category?.length) {
@@ -100,9 +196,6 @@ function renderCharts(rawFileData: rawData[]) {
     }
 
     catregories.add(category);
-
-    const rawDate = rawDataPoint.date;
-    const date = getDate(rawDate);
 
     let combination = dateToCombinationChart.get(date);
     if (!combination) {
@@ -245,5 +338,7 @@ function renderCharts(rawFileData: rawData[]) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  clearHandler();
+  inputDateHandler();
   startFileListening();
 });
