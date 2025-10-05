@@ -32,7 +32,6 @@ type combinationDataChart = {
   rest: number;
 };
 
-let fileData: rawData[] | undefined = undefined;
 let startDate: dayjs.Dayjs | undefined = undefined;
 let endDate: dayjs.Dayjs | undefined = undefined;
 const dateToCombinationChart = new Map<string, combinationDataChart>();
@@ -167,7 +166,10 @@ function startFileListening() {
     }
 
     const file = await fileInput?.files[0]?.text();
-    fileData = JSON.parse(file!);
+    let fileData: any = JSON.parse(file!);
+    if (fileData?.transactions) {
+      fileData = fileData.transactions
+    }
     renderCharts(fileData!);
   });
 }
