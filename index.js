@@ -52451,6 +52451,8 @@ function clearHandler() {
     if (combinationChart) {
       combinationChart.destroy();
     }
+    dateToCombinationChart.clear();
+    dateToBasicCombinationChart.clear();
   });
 }
 function inputDateHandler() {
