@@ -3,6 +3,7 @@ async function build() {
   const result = await Bun.build({
     entrypoints: ['./src/index.html','./src/index.ts'],
     outdir: './dist/',
+    minify: true
   });
 
   if (result.success) {
