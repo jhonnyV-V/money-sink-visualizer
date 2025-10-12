@@ -34,11 +34,6 @@ type combinationDataChart = {
 
 let startDate: dayjs.Dayjs | undefined = undefined;
 let endDate: dayjs.Dayjs | undefined = undefined;
-const dateToCombinationChart = new Map<string, combinationDataChart>();
-const dateToBasicCombinationChart = new Map<
-  string,
-  basicCombinationDataChart
->();
 
 let basicChart:
   | AgChartInstance<AgCartesianChartOptions<basicCombinationDataChart, unknown>>
@@ -119,9 +114,6 @@ function clearHandler() {
     if (combinationChart) {
       combinationChart.destroy();
     }
-
-    dateToCombinationChart.clear()
-    dateToBasicCombinationChart.clear()
   });
 }
 
@@ -179,6 +171,11 @@ function startFileListening() {
 
 function renderCharts(rawFileData: rawData[]) {
   const catregories = new Set<string>();
+  const dateToCombinationChart = new Map<string, combinationDataChart>();
+  const dateToBasicCombinationChart = new Map<
+    string,
+    basicCombinationDataChart
+  >();
   for (let i = 0; i < rawFileData.length; i++) {
     const rawDataPoint = rawFileData[i]!;
     const amount = Math.abs(rawDataPoint.amount);
