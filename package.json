@@ -2,7 +2,7 @@
   "name": "money-sink-visualizer",
   "module": "index.ts",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "1.3.0"
   },
   "peerDependencies": {
     "typescript": "^5"
